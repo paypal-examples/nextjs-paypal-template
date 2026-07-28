@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { paypalClient } from "@/lib/paypalClient";
 import { getProduct, type CartItem } from "@/lib/product";
 import type { FindEligiblePaymentMethodsResponse } from "@paypal/react-paypal-js/sdk-v6";
+import { fetchEligibleMethods as fetchEligibleMethodsSdk } from "@paypal/react-paypal-js/sdk-v6/server";
 
 const ordersController = new OrdersController(paypalClient);
 
@@ -167,5 +168,27 @@ export const fetchEligibleMethods =
       JSON.stringify(json).slice(0, 200),
     );
     return json;
+  };
+
+/**
+ * Same as fetchEligibleMethods, but delegates the actual request to
+ * react-paypal-js's own server helper instead of a hand-rolled fetch, so we
+ * can test the package's server-side method independently.
+ */
+export const fetchEligibleMethodsViaSdk =
+  async (): Promise<FindEligiblePaymentMethodsResponse> => {
+    const accessToken = await getAccessToken();
+
+    return fetchEligibleMethodsSdk({
+      environment: "sandbox",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      payload: {
+        purchase_units: [{ amount: { currency_code: "USD" } }],
+        preferences: { payment_flow: "ONE_TIME_PAYMENT" },
+      },
+    });
   };
 
