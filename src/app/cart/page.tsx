@@ -9,11 +9,13 @@ import {
   clearCart,
   type CartItem,
 } from "@/lib/product";
+import CheckoutScenarios, { SCENARIOS } from "@/components/CheckoutScenarios";
 
 const QUANTITY_OPTIONS = [1, 2, 3, 4, 5];
 
 const Cart = () => {
   const [cart, setCart] = useState<CartItem | null>(null);
+  const [scenario, setScenario] = useState(SCENARIOS[0].href);
   const router = useRouter();
 
   useEffect(() => {
@@ -38,7 +40,7 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    router.push("/checkout");
+    router.push(scenario);
   };
 
   if (!cart) return null;
@@ -108,6 +110,14 @@ const Cart = () => {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Eligibility Test Scenario */}
+          <div className="border-t border-[var(--border)] pt-6 mt-2">
+            <h2 className="text-sm font-medium tracking-widest uppercase text-[var(--foreground-secondary)] mb-4">
+              Eligibility Test Scenario
+            </h2>
+            <CheckoutScenarios value={scenario} onChange={setScenario} />
           </div>
 
           {/* Summary */}

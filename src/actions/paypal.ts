@@ -7,6 +7,8 @@ import {
 import { randomUUID } from "node:crypto";
 import { paypalClient } from "@/lib/paypalClient";
 import { getProduct, type CartItem } from "@/lib/product";
+import type { FindEligiblePaymentMethodsResponse } from "@paypal/react-paypal-js/sdk-v6";
+import { fetchEligibleMethods as fetchEligibleMethodsSdk } from "@paypal/react-paypal-js/sdk-v6/server";
 
 const ordersController = new OrdersController(paypalClient);
 
@@ -107,3 +109,86 @@ export const captureOrder = async ({ orderId }: { orderId: string }) => {
     throw error;
   }
 };
+
+const getAccessToken = async () => {
+  const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
+  const clientSecret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+
+  const response = await fetch(
+    "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to get access token: ${response.status}`);
+  }
+
+  const { access_token } = await response.json();
+  return access_token as string;
+};
+
+/**
+ * Prefetches PayPal eligible payment methods on the server so the client can
+ * hydrate PayPalProvider via eligibleMethodsResponse instead of fetching
+ * client-side.
+ */
+export const fetchEligibleMethods =
+  async (): Promise<FindEligiblePaymentMethodsResponse> => {
+    const accessToken = await getAccessToken();
+
+    const response = await fetch(
+      "https://api-m.sandbox.paypal.com/v2/payments/find-eligible-methods",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          purchase_units: [{ amount: { currency_code: "USD" } }],
+          preferences: { payment_flow: "ONE_TIME_PAYMENT" },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch eligible methods: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log(
+      "[server] fetchEligibleMethods result:",
+      JSON.stringify(json).slice(0, 200),
+    );
+    return json;
+  };
+
+/**
+ * Same as fetchEligibleMethods, but delegates the actual request to
+ * react-paypal-js's own server helper instead of a hand-rolled fetch, so we
+ * can test the package's server-side method independently.
+ */
+export const fetchEligibleMethodsViaSdk =
+  async (): Promise<FindEligiblePaymentMethodsResponse> => {
+    const accessToken = await getAccessToken();
+
+    return fetchEligibleMethodsSdk({
+      environment: "sandbox",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      payload: {
+        purchase_units: [{ amount: { currency_code: "USD" } }],
+        preferences: { payment_flow: "ONE_TIME_PAYMENT" },
+      },
+    });
+  };
+

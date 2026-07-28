@@ -1,7 +1,7 @@
 import { fetchEligibleMethods } from "@/actions/paypal";
-import CheckoutClient from "./CheckoutClient";
+import CheckoutServerRestClient from "./CheckoutServerRestClient";
 
-const CheckoutPage = async () => {
+const CheckoutServerOnlyPage = async () => {
   let eligibleMethodsResponse;
   try {
     eligibleMethodsResponse = await fetchEligibleMethods();
@@ -9,7 +9,9 @@ const CheckoutPage = async () => {
     console.error("Failed to prefetch eligible methods:", error);
   }
 
-  return <CheckoutClient eligibleMethodsResponse={eligibleMethodsResponse} />;
+  return (
+    <CheckoutServerRestClient eligibleMethodsResponse={eligibleMethodsResponse} />
+  );
 };
 
-export default CheckoutPage;
+export default CheckoutServerOnlyPage;
