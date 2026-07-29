@@ -183,6 +183,7 @@ const Checkout = () => {
 
               {/* Payment Buttons */}
               <PayPalProvider
+                environment="sandbox"
                 clientId={clientId}
                 components={[
                   "paypal-payments",
