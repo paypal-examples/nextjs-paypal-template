@@ -11,17 +11,6 @@ import { getProduct, type CartItem } from "@/lib/product";
 const ordersController = new OrdersController(paypalClient);
 
 /**
- * Get the PayPal Client ID for SDK initialization
- */
-export const getBrowserSafeClientId = async () => {
-  const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-  if (!clientId) {
-    throw new Error("PAYPAL_SANDBOX_CLIENT_ID is not defined");
-  }
-  return clientId;
-};
-
-/**
  * Create a PayPal order for one-time payment
  */
 export const createOrder = async (cart: CartItem[]) => {

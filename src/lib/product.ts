@@ -12,21 +12,8 @@ export type CartItem = {
   quantity: number;
 };
 
-const CART_KEY = "paypal-cart";
-
-export const getCart = (): CartItem | null => {
-  if (typeof window === "undefined") return null;
-  const stored = sessionStorage.getItem(CART_KEY);
-  return stored ? JSON.parse(stored) : null;
-};
-
-export const saveCart = (item: CartItem): void => {
-  sessionStorage.setItem(CART_KEY, JSON.stringify(item));
-};
-
-export const clearCart = (): void => {
-  sessionStorage.removeItem(CART_KEY);
-};
+// Cart persistence lives in a cookie so checkout Server Components can read it
+// during SSR. See src/lib/cart.ts (read) and src/actions/cart.ts (write).
 
 /**
  * Get a product by SKU
@@ -44,4 +31,15 @@ export function getProduct(sku: string) {
  */
 export function getAllProducts() {
   return [PRODUCT];
+}
+
+/**
+ * Calculate the total amount for a cart, returned as a fixed-2 string (e.g. "150.00")
+ */
+export function calculateCartTotal(cart: CartItem[]): string {
+  const total = cart.reduce((sum, item) => {
+    const product = getProduct(item.sku);
+    return sum + parseFloat(product.price) * item.quantity;
+  }, 0);
+  return total.toFixed(2);
 }

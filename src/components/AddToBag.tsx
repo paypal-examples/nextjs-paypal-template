@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PRODUCT, saveCart } from "@/lib/product";
+import { PRODUCT } from "@/lib/product";
+import { saveCart } from "@/actions/cart";
 
 const QUANTITY_OPTIONS = [1, 2, 3, 4, 5];
 
 const AddToBag = () => {
   const [quantity, setQuantity] = useState(1);
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const handleAddToBag = () => {
-    saveCart({ sku: PRODUCT.sku, quantity });
-    router.push("/cart");
+    // Persist the cart to the cookie via the server action, then navigate.
+    startTransition(async () => {
+      await saveCart({ sku: PRODUCT.sku, quantity });
+      router.push("/cart");
+    });
   };
 
   return (
@@ -42,9 +47,10 @@ const AddToBag = () => {
       {/* CTA */}
       <button
         onClick={handleAddToBag}
-        className="inline-block px-8 py-3 rounded-full bg-[var(--accent)] text-white text-base font-medium hover:bg-[var(--accent-hover)] transition-colors cursor-pointer"
+        disabled={isPending}
+        className="inline-block px-8 py-3 rounded-full bg-[var(--accent)] text-white text-base font-medium hover:bg-[var(--accent-hover)] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Add to Bag
+        {isPending ? "Adding…" : "Add to Bag"}
       </button>
     </>
   );
