@@ -2,7 +2,7 @@
 
 > **SDK Version**: PayPal JS SDK v6
 > **Framework**: Next.js 16 + React 19 + TypeScript
-> **Frontend Package**: @paypal/react-paypal-js v9.0.1
+> **Frontend Package**: @paypal/react-paypal-js v10.3.0
 > **Backend Package**: @paypal/paypal-server-sdk v2.2.0 (shared Express server)
 > **Payment Methods**: PayPal, Venmo, Pay Later, BCDC (Guest)
 > **Demo**: 3-page checkout flow (Product → Cart → Checkout)
@@ -24,7 +24,7 @@ This Next.js sample application demonstrates how to integrate the [PayPal JS SDK
 | React                     | 19.x    | UI framework                                         |
 | TypeScript                | 5.8.x   | Type safety                                          |
 | Tailwind CSS              | 4.x     | Styling                                              |
-| @paypal/react-paypal-js   | 9.0.1   | React components and hooks for PayPal V6 SDK         |
+| @paypal/react-paypal-js   | 10.3.0  | React components and hooks for PayPal V6 SDK         |
 | @paypal/paypal-server-sdk | 2.2.0   | Server-side PayPal API calls (shared Express server) |
 
 ## Prerequisites
