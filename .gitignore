@@ -4,3 +4,9 @@ out
 .env
 .env*.local
 .vscode/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Local package tarballs (never vendor into the lockfile)
+*.tgz
